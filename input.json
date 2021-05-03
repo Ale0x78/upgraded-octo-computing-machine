@@ -1,0 +1,31 @@
+{
+    "init": [{
+        "name": "Lettuce",
+        "properties": ["Whole"]
+    }, {
+        
+    }"UncookedPatty", "UnslicedBread", "Tomato"],
+    "goal": "Cheeseburger",
+    "actions": [
+        {
+            "name": "CutLettuce",
+            "preconds": ["Lettuce"],
+            "effects": ["ShreddedLettuce"]
+        },
+        {
+            "name": "GrillPatty",
+            "preconds": ["UncookedPatty"],
+            "effects": ["CookedPatty"]
+        },
+        {
+            "name": "SliceBread",
+            "preconds": ["UnsclicedBread"],
+            "effects": ["SlicedBread"]
+        },
+        {
+            "name": "SliceTomato",
+            "preconds": ["Tomato"],
+            "effects": 
+        },
+    ]
+}
