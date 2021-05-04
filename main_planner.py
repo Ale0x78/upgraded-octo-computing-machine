@@ -42,7 +42,14 @@ class Action:
                 if requirement not in state:
                     return False
         return True
-            
+    
+    def run(self, *arguments, state):
+        items = set(arguments)
+        self.can_run(items)
+        for effect in self.effect:
+            pass
+        return state.difference(items).intersection(self.effects)
+
     def examine(self):
         print("\t " + self.name, end=": ")
         t = 0
