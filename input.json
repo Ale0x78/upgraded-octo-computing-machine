@@ -5,7 +5,7 @@
             "prop": ["Whole"]
         },
         {
-            "name": "RawPatty",
+            "name": "Patty",
             "prop": ["Raw"]
         },
         {
@@ -17,18 +17,28 @@
     "actions": [
         {
             "name": "Shred",
-            "preconds": ["Whole"],
-            "effects": ["Shredded"]
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Shredded"]}]
         },
         {
             "name": "Grill",
-            "preconds": ["Raw"],
-            "effects": ["Cooked"]
+            "preconds":  [{ "name" : "*" , "prop"  : ["Raw"] }],
+            "effects": [{ "name" : "*", "prop":["Cooked"]}]
         },
         {
             "name": "Slice",
-            "preconds": ["Whole"],
-            "effects": ["Sliced"]
+            "preconds":  [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [{ "name" : "*", "prop" : ["Sliced"] }]
+        },
+        {
+            "name": "Assemble",
+            "preconds" : [{"name" : "Lettuce",  "prop" : ["Sliced"]}, {"name" : "Bread", "prop" : ["Sliced"]}, {"name" : "Patty", "prop" : ["Cooked"]}],
+            "effects": [{ "name" : "Burger", "prop" : [""] }]
+        },
+        {
+            "name": "Toss",
+            "preconds" : [{"name" : "Lettuce", "prop": ["Shredded"]}, {"name": "Tomato", "prop": ["Sliced"]}, {"name" : "Bread", "prop": ["Cooked", "Sliced"]}],
+            "effects": [{ "name" : "Salad", "prop" : [""]}]
         }
 
     ]
