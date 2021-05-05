@@ -1,5 +1,5 @@
 {
-    "init": [
+    "literals": [
         {
             "name": "Lettuce",
             "prop": ["Whole"]
@@ -33,7 +33,7 @@
         {
             "name": "Assemble",
             "preconds" : [{"name" : "Lettuce",  "prop" : ["Sliced"]}, {"name" : "Bread", "prop" : ["Sliced"]}, {"name" : "Patty", "prop" : ["Cooked"]}],
-            "effects": [{ "name" : "Burger", "prop" : [""] }]
+            "effects": [{ "name" : "Cheeseburger", "prop" : [""] }]
         },
         {
             "name": "Toss",
