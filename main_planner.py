@@ -6,7 +6,7 @@ from primitives import State, Action, World, Plan
 
 class Graph:
     def __init__(self, maxLayers=10, filename=None) -> None:
-        self.goals = []
+        self.goals = set()
         self.world_layers = []
         self.all_actions = []
         self.maxLayers = maxLayers
@@ -14,7 +14,7 @@ class Graph:
         if filename:
             with open(filename, 'r') as data_file:
                 self._world = json.loads('\n'.join(data_file.readlines()))
-            self.goals.append(self._world['goal'])
+            self.goals.add(self._world['goal'])
             actions = []
             state = set()
             action_mutexes = []
@@ -40,9 +40,11 @@ class Graph:
             index = len(self.world_layers) - 1
             latest_world = self.world_layers[index]
             self.expand()
+            latest_world.examine(debug=True)
             if not self.goals.issubset(latest_world.state):
                 continue
-            latest_world.examine(debug=True)
+            if self.extract(index, self.goal):
+                return self._plan_layers
         return None
 
     def expand(self):
@@ -233,7 +235,7 @@ class Graph:
 #w = World(filename='input.json')
 gr = Graph(filename='input.json', maxLayers=3)
 
-gr.plan() 
+print(gr.plan())
 # gr.world_layers[0].examine(debug=True)
 # for action in gr.world_layers[0].actions:
 #     print(action.name, action.can_run(gr.world_layers[0].state))
