@@ -3,7 +3,6 @@ import json
 from itertools import permutations
 from primitives import State, Action, World, Plan
 
-
 class Graph:
     def __init__(self, maxLayers=10, filename=None) -> None:
         self.goals = set()
@@ -14,14 +13,14 @@ class Graph:
         if filename:
             with open(filename, 'r') as data_file:
                 self._world = json.loads('\n'.join(data_file.readlines()))
-            self.goals.add(self._world['goal'])
+            self.goals.add(State(self._world['goal'], [''] ))
             actions = []
             state = set()
             action_mutexes = []
             state_mutexes = []
             for item in self._world['literals']:
                 state.add( State(item['name'], item['prop']) )
-                self.all_actions.append(Action('NoOp' + item['name'], [State(item['name'], item['prop'])], [State(item['name'], item['prop'])]))
+                # self.all_actions.append(Action('NoOp' + item['name'], [State(item['name'], item['prop'])], [State(item['name'], item['prop'])]))
             for action in self._world['actions']:
                 preconds = []
                 effects = []
@@ -37,13 +36,15 @@ class Graph:
 
     def plan(self):
         while len(self.world_layers) != self.maxLayers:
+            self._plan_layers = [None] * len(self.world_layers)
+
             index = len(self.world_layers) - 1
             latest_world = self.world_layers[index]
             self.expand()
             latest_world.examine(debug=True)
-            if not self.goals.issubset(latest_world.state):
+            if not self.goals.issubset(self.world_layers[-1].state) and self.goals != self.world_layers[-1].state :
                 continue
-            if self.extract(index, self.goal):
+            if self.extract(index + 1, self.goals):
                 return self._plan_layers
         return None
 
@@ -72,17 +73,17 @@ class Graph:
         if index == 0:
             return Plan()
         else:
-            self.search(Plan(), index)
+            return self.search(goal, Plan(), index)
             
 
-    def search(goal: set, plan: Plan, index):
+    def search(self, goal: set, plan: Plan, index):
         if goal == set():
             new_goal = set()
             for action in plan.plan:
                 for precondition in action.req:
-                    goal.add(precondition)     
+                    new_goal.add(precondition)     
             
-            extracted_plan = self.extract(new_goal, index - 1)
+            extracted_plan = self.extract(index - 1, new_goal)
             if extracted_plan is None:
                 return None
             else:
@@ -91,13 +92,13 @@ class Graph:
                 return plan
         else:  # We try to resolve one of the goals
             item = goal.pop()
-            resulvers = []
-            for action in self.world_layers[index].action_list:
+            resulvers = set()
+            for action in self.world_layers[index - 1].actions:
                 if item in action.effects:
                     if plan.plan:
                         mutex = False
                         for act in plan.plan:
-                            if (act, action) in self.world_layers[index].action_mutex:
+                            if (act, action) in self.world_layers[index].action_mutexes:
                                 mutex = True
                                 break
                         if not mutex:
@@ -108,13 +109,13 @@ class Graph:
             while resulvers:
                 res = resulvers.pop()
                 plan.append(res)
-                plan_result = self.search(goal - res.effect,
+                plan_result = self.search(goal - res.effects,
                                         plan, index)
                 if plan_result is not None:
                     return plan_result
                 else:
                     plan.remove(res)
-                    gaol.add(proposition)
+                    goal.add(item)
             return None
 
 
@@ -225,20 +226,11 @@ class Graph:
                 break
         return all_mutex
 
-        
 
-
-
-
-# w = World(data='{"init" : [ {"name" : "tomato", "prop" : ["whole"] }, { "name": "patty", "prop" : ["uncooked"] }] }')
-
-#w = World(filename='input.json')
-gr = Graph(filename='input.json', maxLayers=3)
-
-print(gr.plan())
-# gr.world_layers[0].examine(debug=True)
-# for action in gr.world_layers[0].actions:
-#     print(action.name, action.can_run(gr.world_layers[0].state))
-
-# print(gr.computeActionMutexes(gr.world_layers[0], gr.world_layers[1]))
-# a = []
+if __name__ == "__main__":
+    from sys import argv
+    if len(argv) != 2:
+        argv.append("input.json")
+    gr = Graph(filename=argv[1], maxLayers=10)
+    for p in gr.plan():
+        print(p)

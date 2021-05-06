@@ -102,7 +102,11 @@ class Plan(object):
     def __ne__(self, other):
         return not self.__eq__(other)
     def __repr__(self):
-        return f"Plan object. {self._plan}"
+        re = ""
+        for i in self._plan:
+            re += "{} {} into {}".format(i.name, i.req, i.effects)
+            re += '; '
+        return re
 
     def append(self, action: Action):
         self._plan.append(action)
