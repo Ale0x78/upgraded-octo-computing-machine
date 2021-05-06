@@ -1,104 +1,7 @@
 #!/usr/bin/env python3.9
 import json
 from itertools import permutations
-
-class State:
-    def __init__(self, name, prop):
-        self.prop = set(prop)
-        self.name = name
-    def __hash__(self):
-        final = hash(self.name)
-        for i in self.prop:
-            final += hash(i)
-        return final
-    def __eq__(self, obj):
-        return self.name == obj.name and self.prop.difference(obj.prop) == set()
-    
-    def __repr__(self):
-        return "{} {}".format(self.prop, self.name)
-    def __str__(self):
-        return "{} {}".format(self.prop, self.name)
-
-
-class Action:
-    def __init__(self, name, req, effects):
-        self.name = name
-        self.req = set()
-        for r in req:
-            self.req.add(State(r['name'], r['prop']))
-        
-        self.effects = set()
-        for s in effects:
-            self.effects.add(State(s['name'], s['prop']))
-    
-    def __str__(self):
-        return "{} ( {} ) --> {} ".format(self.name, self.req, self.effects)
-    def __repr__(self):
-        return "{} ( {} ) --> {} ".format(self.name, self.req, self.effects)
-
-    def __hash__(self):
-        final = hash(self.name)
-        for i in self.req:
-            final += hash(i)
-        for i in self.effects:
-            final += hash(i)
-        return final
-    def __eq__(self, obj):
-        return self.name == obj.name and self.req.difference(obj.req) == set() and self.effects.difference(obj.effects) == set()
-
-    def can_run(self, state):
-        resultEffects = set() #array of states
-
-        # for loop checks if requirements are met
-        for requirement in self.req:
-            if requirement.name == "*":
-                value = False
-                for s in state:
-                    if(len(requirement.prop.difference(s.prop)) == 0):
-                        value = True
-                        break
-                if value == False:
-                    return False
-
-            else:
-                if requirement not in state:
-                    return False
-        return True
-
-    def examine(self):
-        print("\t " + self.name, end=": ")
-        t = 0
-        for i in self.req:
-            for z in i.prop:
-                print(z, end=" ")
-            print("item" if i.name == "*" else i.name, end="")
-            print(", " if t != len(self.req) - 1 else "", end="") 
-            t += 1
-        print("  -->  ", end=" ")
-        for i in self.effects:
-            for z in i.prop:
-                print(z, end=" ")
-            print("One" if i.name == "*" else i.name) 
-
-class World:
-    def __init__(self, actions, state, action_mutexes, state_mutexes):
-        
-        self.actions = actions #array of actions possible from self.state
-        self.state = state
-        self.action_mutexes = action_mutexes
-        self.state_mutexes = state_mutexes
-    
-    def examine(self, debug=False):
-        print("We have:")
-        for item in self.state:
-            property = ""
-            for p in item.prop:
-                property += p + " "
-            print("\t " + property + item.name)
-        if debug:
-          print("I can: ")
-          for action in self.actions:
-            action.examine()
+from primitives import State, Action, World, Plan
 
 
 class Graph:
@@ -106,7 +9,8 @@ class Graph:
         self.goals = []
         self.world_layers = []
         self.all_actions = []
-
+        self.maxLayers = maxLayers
+        self._plan_layers = []
         if filename:
             with open(filename, 'r') as data_file:
                 self._world = json.loads('\n'.join(data_file.readlines()))
@@ -117,55 +21,111 @@ class Graph:
             state_mutexes = []
             for item in self._world['literals']:
                 state.add( State(item['name'], item['prop']) )
-                self.all_actions.append(Action('NoOp' + item['name'], [item], [item]))
+                self.all_actions.append(Action('NoOp' + item['name'], [State(item['name'], item['prop'])], [State(item['name'], item['prop'])]))
             for action in self._world['actions']:
-                self.all_actions.append(Action(action['name'], action['preconds'], action['effects']))
+                preconds = []
+                effects = []
+                for precon in action['preconds']:
+                    preconds.append(State(precon['name'], precon['prop']))
+                for effect in action['effects']:
+                    effects.append(State(effect['name'], effect['prop']))
+                self.all_actions.append(Action(action['name'], preconds, effects))
             
-            newWorld = World(self._computeActions(state), state, action_mutexes, state_mutexes)
+            newWorld = World(None, state, action_mutexes, state_mutexes)
             self.world_layers.append(newWorld)
 
 
     def plan(self):
-        
-        world_layer_ind = 0
-        while True:
-            current_world_layer = self.world_layers[world_layer_ind]
-            #compute possible actions, append to world layer
-            current_world_state = self.world_layers[world_layer_ind].state
-            possible_actions = self._computeActions(current_world_state)
-            self.world_layers[world_layer_ind].actions = possible_actions
-
-            #compute effects of each action, make a new world layer with these effects
-            next_state = self._computePreconditions(current_world_state, possible_actions)
-            next_world_layer = World(None, next_state, None, None)
-
-            #compute Action mutexes, will need current state, possible actions, and effects of next world
-            #changes will be made within the function
-            self._computeActionMutexes(current_world_layer, next_world_layer)
-            print(current_world_layer.action_mutexes)
-
-            #compute effect mutexes, you will need the current_world_layer and the next_world_layer
-            self._computePreconditionMutexes(current_world_layer, next_world_layer)
-            print(next_world_layer.state_mutexes)
-            break
-            
-
-        pass
+        while len(self.world_layers) != self.maxLayers:
+            index = len(self.world_layers) - 1
+            latest_world = self.world_layers[index]
+            self.expand()
+            if not self.goals.issubset(latest_world.state):
+                continue
+            latest_world.examine(debug=True)
+        return None
 
     def expand(self):
-        pass
+        world_layer_ind = len(self.world_layers) - 1
+        current_world_layer = self.world_layers[world_layer_ind]
+        #compute possible actions, append to world layer
+        current_world_state = self.world_layers[world_layer_ind].state
+        possible_actions = self._computeActions(current_world_state)
+        self.world_layers[world_layer_ind].actions = possible_actions
 
-    def extract(self):
-        pass
+        #compute effects of each action, make a new world layer with these effects
+        next_state = self._computePreconditions(current_world_state, possible_actions)
+        next_world_layer = World(None, next_state, None, None)
 
-    def _computeActions(self, state):
+        #compute Action mutexes, will need current state, possible actions, and effects of next world
+        #changes will be made within the function
+        self._computeActionMutexes(current_world_layer, next_world_layer)
+        
+
+        #compute effect mutexes, you will need the current_world_layer and the next_world_layer
+        self._computePreconditionMutexes(current_world_layer, next_world_layer)
+        self.world_layers.append(next_world_layer)
+
+    def extract(self, index, goal):
+        if index == 0:
+            return Plan()
+        else:
+            self.search(Plan(), index)
+            
+
+    def search(goal: set, plan: Plan, index):
+        if goal == set():
+            new_goal = set()
+            for action in plan.plan:
+                for precondition in action.req:
+                    goal.add(precondition)     
+            
+            extracted_plan = self.extract(new_goal, index - 1)
+            if extracted_plan is None:
+                return None
+            else:
+                self._plan_layers[index - 1] = extracted_plan
+                self._plan_layers[index - 1] = plan
+                return plan
+        else:  # We try to resolve one of the goals
+            item = goal.pop()
+            resulvers = []
+            for action in self.world_layers[index].action_list:
+                if item in action.effects:
+                    if plan.plan:
+                        mutex = False
+                        for act in plan.plan:
+                            if (act, action) in self.world_layers[index].action_mutex:
+                                mutex = True
+                                break
+                        if not mutex:
+                            resulvers.add(action)
+                    else:
+                        resulvers.add(action)
+            
+            while resulvers:
+                res = resulvers.pop()
+                plan.append(res)
+                plan_result = self.search(goal - res.effect,
+                                        plan, index)
+                if plan_result is not None:
+                    return plan_result
+                else:
+                    plan.remove(res)
+                    gaol.add(proposition)
+            return None
+
+
+
+    def _computeActions(self, states):
         #compute possible actions given the state
         possible_actions = []
         for action in self.all_actions:
-            if action.can_run(state):
-
+            if action.can_run(states):
                 if len(action.req) == 1 and list(action.req)[0].name == "*":
-                    possible_actions.append(Action(action.name, state, State(state.name, list(action.effects)[0])))
+                        for state in states:
+                            if action.can_run(set([state])):
+                                possible_actions.append(Action(action.name, [state], [State(state.name, list(action.effects)[0].prop)]))
                 else:
                     possible_actions.append(action)
         return possible_actions
@@ -197,7 +157,7 @@ class Graph:
         #currentworld has a state and its actions
         #nextworld has only state
         action_mutex_list = []
-        action_list = self.all_actions
+        action_list = currentWorld.actions
         for pair in list(permutations(action_list, 2)):
             if self._computeActionMutexe(pair, nextWorld.state_mutexes):
                 action_mutex_list.append(pair)
@@ -225,7 +185,7 @@ class Graph:
 
     def _computePreconditionMutexes(self, current_world: World , next_world: World):
         mutex_list = []
-        action_list = self.all_actions
+        action_list = current_world.actions
         for pair in list(permutations(current_world.state)):
             if self.compute_precondition_mutex(pair, action_list, current_world.action_mutexes):
                 if pair not in mutex_list and (pair[1], pair[0]) not in mutex_list:
@@ -271,11 +231,12 @@ class Graph:
 # w = World(data='{"init" : [ {"name" : "tomato", "prop" : ["whole"] }, { "name": "patty", "prop" : ["uncooked"] }] }')
 
 #w = World(filename='input.json')
-gr = Graph(filename='input.json')
+gr = Graph(filename='input.json', maxLayers=3)
 
 gr.plan() 
-gr.world_layers[0].examine(debug=True)
+# gr.world_layers[0].examine(debug=True)
 # for action in gr.world_layers[0].actions:
 #     print(action.name, action.can_run(gr.world_layers[0].state))
 
 # print(gr.computeActionMutexes(gr.world_layers[0], gr.world_layers[1]))
+# a = []
