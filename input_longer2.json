@@ -1,0 +1,64 @@
+{
+  "literals": [
+      {
+          "name": "Lettuce",
+          "prop": ["Whole"]
+      },
+      {
+          "name": "Patty",
+          "prop": ["Raw"]
+      },
+      {
+          "name": "Bread",
+          "prop": ["Whole"]
+      },
+      {
+        "name": "Tomato",
+        "prop": ["Whole"]
+      }
+  ],
+  "goal": "Hot Salad",
+  "actions": [
+      {
+          "name": "Shred",
+          "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+          "effects": [ { "name" : "*", "prop": ["Shredded"]}]
+      },
+      {
+          "name": "Grill",
+          "preconds":  [{ "name" : "*" , "prop"  : ["Raw"] }],
+          "effects": [{ "name" : "*", "prop":["Cooked"]}]
+      },
+      {
+          "name": "Slice",
+          "preconds":  [{ "name" : "*" , "prop"  : ["Whole"] }],
+          "effects": [{ "name" : "*", "prop" : ["Sliced"] }]
+      },
+      {
+          "name": "Assemble",
+          "preconds" : [{"name" : "Lettuce",  "prop" : ["Sliced"]}, {"name" : "Bread", "prop" : ["Sliced"]}, {"name" : "Patty", "prop" : ["Cooked"]}],
+          "effects": [{ "name" : "Cheeseburger", "prop" : [""] }]
+      },
+      {
+          "name": "Dry",
+          "preconds": [{"name": "Bread", "prop" : ["Sliced"]}],
+          "effects": [{"name": "Crutons", "prop" : [""]}]
+      },
+      {
+        "name": "Chop",
+        "preconds": [{"name" : "Patty", "prop" : ["Cooked"]}],
+        "effects": [{"name": "Meat Slices", "prop" : [""]}]
+      },
+      {
+          "name": "Toss",
+          "preconds" : [{"name" : "Lettuce", "prop": ["Shredded"]}, {"name": "Tomato", "prop": ["Sliced"]}, {"name" : "Meat Slices", "prop" : [""]}, {"name" : "Crutons", "prop": [""]}],
+          "effects": [{ "name" : "Salad", "prop" : [""]}]
+      },
+      {
+        "name" : "Heat-Up",
+        "preconds" : [{ "name" : "Salad", "prop" : [""]}],
+        "effects" : [{ "name" : "Hot Salad", "prop" : [""]}]
+      }
+
+  ]
+}

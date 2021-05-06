@@ -4,9 +4,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "main_planner",
+      "label": "naive_planer",
       "type": "shell",
-      "command": "python3 ./main_planner.py",
+      "command": "python3 ./naive_planer.py",
       "problemMatcher": [],
       "group": {
         "kind": "build",

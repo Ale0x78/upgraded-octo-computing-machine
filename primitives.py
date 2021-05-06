@@ -104,8 +104,9 @@ class Plan(object):
     def __repr__(self):
         re = ""
         for i in self._plan:
-            re += "{} {} into {}".format(i.name, i.req, i.effects)
-            re += '; '
+            if i.name[:4] != "NoOp":
+                re += "{} {} into {}".format(i.name, i.req, i.effects)
+                re += '; '
         return re
 
     def append(self, action: Action):
