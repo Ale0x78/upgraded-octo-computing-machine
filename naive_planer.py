@@ -10,6 +10,8 @@ class Graph:
         self.all_actions = []
         self.maxLayers = maxLayers
         self._plan_layers = []
+
+        #file init
         if filename:
             with open(filename, 'r') as data_file:
                 self._world = json.loads('\n'.join(data_file.readlines()))
@@ -35,6 +37,7 @@ class Graph:
 
 
     def plan(self):
+        #perform the graph plan algorithm
         while len(self.world_layers) != self.maxLayers:
             self._plan_layers = [None] * len(self.world_layers)
 
@@ -43,8 +46,10 @@ class Graph:
             print("S{}".format(index))
             self.expand()
             latest_world.examine(debug=True)
+            #check if expansion resulted in the goal
             if not self.goals.issubset(self.world_layers[-1].state) and self.goals != self.world_layers[-1].state :
                 continue
+            #try to extract a solution
             if self.extract(index + 1, self.goals):
                 return self._plan_layers
         return None

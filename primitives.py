@@ -1,4 +1,8 @@
 class State:
+    '''
+    Hold a state name
+    Holds a set of properties (ex Whole, Shredded, Raw)
+    '''
     def __init__(self, name, prop):
         self.prop = set(prop)
         self.name = name
@@ -17,6 +21,10 @@ class State:
 
 
 class Action:
+    '''
+    Hold a state name
+    Holds a set of properties (ex Whole, Shredded, Raw)
+    '''
     def __init__(self, name, req, effects):
         self.name = name
         self.req = set(req)        
@@ -72,6 +80,10 @@ class Action:
             print("One" if i.name == "*" else i.name) 
 
 class World:
+    '''
+    Makes up the layers of the planning graph
+    Includes the set of possible actions, set of the current state, and mutexes for each.
+    '''
     def __init__(self, actions, state, action_mutexes, state_mutexes):
         
         self.actions = actions #array of actions possible from self.state
