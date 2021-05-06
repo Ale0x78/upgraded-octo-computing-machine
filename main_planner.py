@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.9
 import json
-
+from itertools import permutations
 
 class State:
     def __init__(self, name, prop):
@@ -27,6 +27,21 @@ class Action:
         for s in effects:
             self.effects.add(State(s['name'], s['prop']))
     
+    def __str__(self):
+        return "{}".format(self.name)
+    def __repr__(self):
+        return "{}".format(self.name)
+
+    def __hash__(self):
+        final = hash(self.name)
+        for i in self.req:
+            final += hash(i)
+        for i in self.effects:
+            final += hash(i)
+        return final
+    def __eq__(self, obj):
+        return self.name == obj.name and self.req.difference(obj.req) == set() and self.effects.difference(obj.effects) == set()
+
     def can_run(self, state):
         resultEffects = set() #array of states
 
@@ -45,13 +60,6 @@ class Action:
                 if requirement not in state:
                     return False
         return True
-    
-    def run(self, *arguments, state):
-        items = set(arguments)
-        self.can_run(items)
-        for effect in self.effect:
-            pass
-        return state.difference(items).intersection(self.effects)
 
     def examine(self):
         print("\t " + self.name, end=": ")
@@ -129,6 +137,7 @@ class Graph:
             #compute Action mutexes, will need current state, possible actions, and effects of next world
             #changes will be made within the function
             self._computeActionMutexes(current_world_layer, next_world_layer)
+            print(next_world_layer.action_mutexes)
             break
             
 
@@ -165,11 +174,37 @@ class Graph:
     def _computeActionMutexes(self, currentWorld, nextWorld):
         #currentworld has a state and its actions
         #nextworld has only state
+        action_mutex_list = []
+        action_list = self.all_actions
+        for pair in list(permutations(action_list, 2)):
+            if self._computeActionMutexe(pair, currentWorld.state_mutexes):
+                action_mutex_list.append(pair)
+        nextWorld.action_mutexes = action_mutex_list
+    
 
-        pass
+    @staticmethod
+    def _computeActionMutexe(pair, state_mutexes):
+        a = pair[0]
+        b = pair[1]
+        if a.req.intersection(b.req.union(b.req)) != set():
+            return True
+        if b.req.intersection(a.req.union(a.req)) != set():
+            return True
+        if state_mutexes is not None:
+            for mutex in state_mutexes:
+                # (p, q)
+                p = mutex[0]
+                q = mutex[1]
+                if p in a.req and q in b.req:
+                    return True
 
-    def _computePreconditionMutexes(self):
-        pass
+        return False
+                
+
+    def _computePreconditionMutexes(self, World: current_world, World: past_world):
+        mutex_list = []
+        for pair in list(permutations(current_world.st))
+            pass
 
 
 
@@ -178,7 +213,9 @@ class Graph:
 #w = World(filename='input.json')
 gr = Graph(filename='input.json')
 
-gr.plan()
-gr.world_layers[0].examine(debug=True)
-for action in gr.world_layers[0].actions:
-    print(action.name, action.can_run(gr.world_layers[0].state))
+gr.plan() 
+# gr.world_layers[0].examine(debug=True)
+# for action in gr.world_layers[0].actions:
+#     print(action.name, action.can_run(gr.world_layers[0].state))
+
+# print(gr.computeActionMutexes(gr.world_layers[0], gr.world_layers[1]))
