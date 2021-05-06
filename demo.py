@@ -30,6 +30,7 @@ class Graph:
             for action in self.all_actions:
               action.examine()
             starting_items = []
+            # Property [Space] Item
             a = input("Starting Items [Empty to end]> ")
             while a != '':
               starting_items.append( (a.split(' ')[1], [a.split(' ')[0]]) )
