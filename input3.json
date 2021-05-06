@@ -1,0 +1,115 @@
+{
+    "literals": [
+        {
+            "name": "Lettuce",
+            "prop": ["Whole"]
+        },
+        {
+            "name": "Patty",
+            "prop": ["Raw"]
+        },
+        {
+            "name": "Bread",
+            "prop": ["Whole"]
+        }
+    ],
+    "goal": "Cheeseburger",
+    "actions": [
+        {
+            "name": "Shred",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Shredded"]}]
+        },
+        {
+            "name": "Grill",
+            "preconds":  [{ "name" : "*" , "prop"  : ["Raw"] }],
+            "effects": [{ "name" : "*", "prop":["Cooked"]}]
+        },
+        {
+            "name": "Slice",
+            "preconds":  [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [{ "name" : "*", "prop" : ["Sliced"] }]
+        },
+        {
+            "name": "Assemble",
+            "preconds" : [{"name" : "Lettuce",  "prop" : ["Sliced"]}, {"name" : "Bread", "prop" : ["Sliced"]}, {"name" : "Patty", "prop" : ["Cooked"]}],
+            "effects": [{ "name" : "Cheeseburger", "prop" : [""] }]
+        },
+        {
+            "name": "Toss",
+            "preconds" : [{"name" : "Lettuce", "prop": ["Shredded"]}, {"name": "Tomato", "prop": ["Sliced"]}, {"name" : "Bread", "prop": ["Cooked", "Sliced"]}],
+            "effects": [{ "name" : "Salad", "prop" : [""]}]
+        },
+        {
+            "name": "Cut",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Cut"]}]
+        },
+        {
+            "name": "Dice",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Diced"]}]
+        },
+        {
+            "name": "Fry",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Fried"]}]
+        },
+        {
+            "name": "Smoke",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Smoked"]}]
+        },
+        {
+            "name": "Stir Fry",
+            "preconds" : [{"name" : "Tomato", "prop": ["Diced"]}, {"name": "Onion", "prop": ["Sliced"]}, {"name" : "Salt", "prop": []}],
+            "effects": [ { "name" : "*", "prop": ["Shredded"]}]
+        },
+        {
+            "name": "Steam",
+            "preconds": [{ "name" : "*" , "prop"  : ["Vegetable"] }],
+            "effects": [ { "name" : "*", "prop": ["Steamed"]}]
+        },
+        {
+            "name": "Drain",
+            "preconds":  [{ "name" : "*" , "prop"  : ["Wet"] }],
+            "effects": [{ "name" : "*", "prop":["Drained"]}]
+        },
+        {
+            "name": "Slice2",
+            "preconds":  [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [{ "name" : "*", "prop" : ["Sliced2"] }]
+        },
+        {
+            "name": "Assemble without Lettuce",
+            "preconds" : [{"name" : "Bread", "prop" : ["Sliced"]}, {"name" : "Patty", "prop" : ["Cooked"]}],
+            "effects": [{ "name" : "Burger", "prop" : [""] }]
+        },
+        {
+            "name": "Toss2 without tomato",
+            "preconds" : [{"name" : "Lettuce", "prop": ["Shredded"]}, {"name" : "Bread", "prop": ["Cooked", "Sliced"]}],
+            "effects": [{ "name" : "Salad2", "prop" : [""]}]
+        },
+        {
+            "name": "Deep Fry",
+            "preconds": [{ "name" : "*" , "prop"  : ["Dry"] }],
+            "effects": [ { "name" : "*", "prop": ["Deep Fried"]}]
+        },
+        {
+            "name": "Dice2",
+            "preconds": [{ "name" : "*" , "prop"  : ["Whole"] }],
+            "effects": [ { "name" : "*", "prop": ["Diced2"]}]
+        },
+        {
+            "name": "CookRice",
+            "preconds": [{ "name" : "Rice" , "prop"  : ["Uncooked"] }],
+            "effects": [ { "name" : "Rice", "prop": ["Cooked"]}]
+        },
+        {
+            "name": "Mix",
+            "preconds": [{ "name" : "Beans" , "prop"  : ["Whole"] }, { "name": "SourCream" , "prop" : ["Whole"]}],
+            "effects": [ { "name" : "BeanDip", "prop": ["Whole"]}]
+        },
+
+    ]
+}
